@@ -60,17 +60,16 @@ io.sockets.on('connection', function (socket) {
                 //Get Thumbnail Here
                 var readS = fs.createReadStream("Temp/" + Name);
                 var writeS = fs.createWriteStream("Video/" + Name);
-                readS.pipe(writeS);
+                readS.pipe(writeS);  //https://groups.google.com/forum/#!msg/nodejs/YWQ1sRoXOdI/3vDqoTazbQQJ
 
                 readS.on('end', function(){
                     //Operation done
                     fs.unlink("Temp/" + Name, function () { //This Deletes The Temporary File
                         //Moving File Completed
-                        console.log(Name);
                         exec("ffmpeg -i Video/" + Name  + " -ss 01:30 -r 1 -an -vframes 1 -f mjpeg Video/" + Name  + ".jpg", function(err){
-                            console.log(err);
                             socket.emit('Done', {'Image' : 'Video/' + Name + '.jpg'});
                             delete Files[Name];
+                            console.log(Files[Name]);
                         });
                     });
                 });
