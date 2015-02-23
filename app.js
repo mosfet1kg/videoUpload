@@ -8,7 +8,7 @@ var app = require('http').createServer(handler),
 app.listen(8080);
 var Files = [];
 function handler (req, res) {
-    fs.readFile(path.join(__dirname, 'public', 'index.html'),
+    fs.readFile(path.join(__dirname, 'index.html'),
         function (err, data) {
             if (err) {
                 res.writeHead(500);
@@ -62,6 +62,7 @@ io.sockets.on('connection', function (socket) {
                 //Get Thumbnail Here
                 var inp = fs.createReadStream("Temp/" + Name);
                 var out = fs.createWriteStream("Video/" + Name);
+
                 util.pump(inp, out, function(){
                     fs.unlink("Temp/" + Name, function () { //This Deletes The Temporary File
                         //Moving File Completed
