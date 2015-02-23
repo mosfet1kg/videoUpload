@@ -24,7 +24,10 @@
             document.getElementById('NameBox').value = SelectedFile.name;
         }
 
-        var socket = io.connect('http://localhost:8080');
+
+        var Path = window.location.host;
+
+        var socket = io.connect(Path);
         var FReader;
         var Name;
         function StartUpload(){
@@ -46,9 +49,6 @@
                 alert("Please Select A File");
             }
         }
-
-        var Path = window.location.host;
-        console.log(Path);
 
         socket.on('Done', function (data){
             var Content = "Video Successfully Uploaded !!";
