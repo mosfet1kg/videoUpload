@@ -47,7 +47,8 @@
             }
         }
 
-        var Path = "http://localhost/";
+        var Path = window.location.host;
+        console.log(Path);
 
         socket.on('Done', function (data){
             var Content = "Video Successfully Uploaded !!";
