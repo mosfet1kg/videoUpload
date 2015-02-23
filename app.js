@@ -8,6 +8,8 @@ var app = require('http').createServer(handler),
 app.listen(8080);
 var Files = [];
 function handler (req, res) {
+    console.log(req.body);
+
     fs.readFile(path.join(__dirname, 'index.html'),
         function (err, data) {
             if (err) {
@@ -64,6 +66,7 @@ io.sockets.on('connection', function (socket) {
                 var out = fs.createWriteStream("Video/" + Name);
 
                 util.pump(inp, out, function(){
+                    console.log('hi');
                     fs.unlink("Temp/" + Name, function () { //This Deletes The Temporary File
                         //Moving File Completed
                         exec("ffmpeg -i Video/" + Name  + " -ss 01:30 -r 1 -an -vframes 1 -f mjpeg Video/" + Name  + ".jpg", function(err){
