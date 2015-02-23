@@ -52,7 +52,7 @@
 
         socket.on('Done', function (data){
             var Content = "Video Successfully Uploaded !!";
-            Content += "<img id='Thumb' src='" + Path + data['Image'] + "' alt='" + Name + "'><br>";
+            Content += "<img id='Thumb' src='" + data['Image'] + "' alt='" + Name + "'><br>";
             Content += "<button  type='button' name='Upload' value='' id='Restart' class='Button'>Upload Another</button>";
             document.getElementById('UploadArea').innerHTML = Content;
             document.getElementById('Restart').addEventListener('click', Refresh);

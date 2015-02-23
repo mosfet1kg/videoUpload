@@ -1,25 +1,21 @@
-var app = require('http').createServer(handler),
-    io = require('socket.io').listen(app),
+var express = require('express'),
+    app = express(),
     fs = require('fs'),
     exec = require('child_process').exec,
-    util = require('util'),
     path = require('path');
 
-app.listen(8080);
-var Files = [];
-function handler (req, res) {
-    console.log(req.body);
+var server = app.listen(8080, function(){
+        console.log('This server is running on the port ' + this.address().port);
+    }
+);
 
-    fs.readFile(path.join(__dirname, 'index.html'),
-        function (err, data) {
-            if (err) {
-                res.writeHead(500);
-                return res.end('Error loading index.html');
-            }
-            res.writeHead(200);
-            res.end(data);
-        });
-}
+var io = require('socket.io').listen(server);
+
+var Files = [];
+
+app.use(express.static(__dirname));
+
+
 
 io.sockets.on('connection', function (socket) {
 
@@ -33,11 +29,11 @@ io.sockets.on('connection', function (socket) {
 
         var Place = 0;
         try{
-            var Stat = fs.statSync('Temp/' +  Name);
-            if(Stat.isFile())
+            var stat = fs.statSync('Temp/' +  Name);
+            if(stat.isFile())
             {
-                Files[Name]['Downloaded'] = Stat.size;
-                Place = Stat.size / 524288;
+                Files[Name]['Downloaded'] = stat.size;
+                Place = stat.size / 524288;
             }
         }
         catch(er){} //It's a New File
@@ -62,22 +58,26 @@ io.sockets.on('connection', function (socket) {
         {
             fs.write(Files[Name]['Handler'], Files[Name]['Data'], null, 'Binary', function(err, Writen){
                 //Get Thumbnail Here
-                var inp = fs.createReadStream("Temp/" + Name);
-                var out = fs.createWriteStream("Video/" + Name);
+                var readS = fs.createReadStream("Temp/" + Name);
+                var writeS = fs.createWriteStream("Video/" + Name);
+                readS.pipe(writeS);
 
-                util.pump(inp, out, function(){
-                    console.log('hi');
+                readS.on('end', function(){
+                    //Operation done
                     fs.unlink("Temp/" + Name, function () { //This Deletes The Temporary File
                         //Moving File Completed
+                        console.log(Name);
                         exec("ffmpeg -i Video/" + Name  + " -ss 01:30 -r 1 -an -vframes 1 -f mjpeg Video/" + Name  + ".jpg", function(err){
+                            console.log(err);
                             socket.emit('Done', {'Image' : 'Video/' + Name + '.jpg'});
+                            delete Files[Name];
                         });
                     });
                 });
             });
         }
         else if(Files[Name]['Data'].length > 10485760){ //If the Data Buffer reaches 10MB
-            fs.write(Files[Name]['Handler'], Files[Name]['Data'], null, 'Binary', function(err, Writen){
+            fs.write(Files[Name]['Handler'], Files[Name]['Data'], null, 'Binary', function(err, writen){
                 Files[Name]['Data'] = ""; //Reset The Buffer
                 var Place = Files[Name]['Downloaded'] / 524288;
                 var Percent = (Files[Name]['Downloaded'] / Files[Name]['FileSize']) * 100;
