@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <title>Video Upload</title>
     <script src="https://cdn.socket.io/socket.io-1.3.4.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
     <script>
         window.addEventListener("load", Ready);
 
         function Ready(){
             if(window.File && window.FileReader){ //These are the relevant HTML5 objects that we are going to use
-                document.getElementById('UploadButton').addEventListener('click', StartUpload);
-                document.getElementById('FileBox').addEventListener('change', FileChosen);
+                $('#UploadButton').on('click', StartUpload);
+                $('#FileBox').on('change', FileChosen);
             }
             else
             {
@@ -38,8 +39,10 @@
                 var Content = "<span id='NameArea'>Uploading " + SelectedFile.name + " as " + Name + "</span>";
                 Content += '<div id="ProgressContainer"><div id="ProgressBar"></div></div><span id="percent">0%</span>';
                 Content += "<span id='Uploaded'> - <span id='MB'>0</span>/" + Math.round(SelectedFile.size / 1048576) + "MB</span>";
-                document.getElementById('UploadArea').innerHTML = Content;
-                FReader.onload = function(evnt){
+
+                document.getElementById('UploadArea').innerHTML = Content;  //기존에 있던 파일 선택창과 name 박스를 삭제하고 업로드 상황으로 바꾼다
+
+                FReader.onload = function(evnt){  //load 이벤트 핸들러. 이 이벤트는 읽기 동작이 성공적으로 완료 되었을 때 마다 발생합니다.
                     socket.emit('Upload', { 'Name' : Name, Data : evnt.target.result });
                 };
                 socket.emit('Start', { 'Name' : Name, 'Size' : SelectedFile.size });
@@ -65,7 +68,7 @@
             UpdateBar(data['Percent']);
             var Place = data['Place'] * 524288; //The Next Blocks Starting Position
             var NewFile = SelectedFile.slice(Place, Place + Math.min(524288, (SelectedFile.size-Place)));  //The Variable that will hold the new Block of Data
-            FReader.readAsBinaryString(NewFile);
+            FReader.readAsBinaryString(NewFile);   // FReader.onload 이벤트 참조
         });
 
         function UpdateBar(percent){
