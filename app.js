@@ -16,14 +16,13 @@ var Files = [];
 app.use(express.static(__dirname));
 
 
-
 io.sockets.on('connection', function (socket) {
 
     socket.on('Start', function (data) { //data contains the variables that we passed through in the html file
         var Name = data['Name'];
         Files[Name] = {  //Create a new Entry in The Files Variable
             FileSize : data['Size'],
-            Data     : "",
+            Data     : "",              //buffer
             Downloaded : 0
         };
 
@@ -56,7 +55,7 @@ io.sockets.on('connection', function (socket) {
         Files[Name]['Data'] += data['Data'];
         if(Files[Name]['Downloaded'] == Files[Name]['FileSize']) //If File is Fully Uploaded
         {
-            fs.write(Files[Name]['Handler'], Files[Name]['Data'], null, 'Binary', function(err, Writen){
+            fs.write(Files[Name]['Handler'], Files[Name]['Data'], null, 'Binary', function(err, Written){
                 //Get Thumbnail Here
                 var readS = fs.createReadStream("Temp/" + Name);
                 var writeS = fs.createWriteStream("Video/" + Name);
@@ -66,11 +65,12 @@ io.sockets.on('connection', function (socket) {
                     //Operation done
                     fs.unlink("Temp/" + Name, function () { //This Deletes The Temporary File
                         //Moving File Completed
-                        exec("ffmpeg -i Video/" + Name  + " -ss 01:30 -r 1 -an -vframes 1 -f mjpeg Video/" + Name  + ".jpg", function(err){
-                            socket.emit('Done', {'Image' : 'Video/' + Name + '.jpg'});
-                            delete Files[Name];
-                            console.log(Files[Name]);
-                        });
+                        //exec("ffmpeg -i Video/" + Name  + " -ss 01:30 -r 1 -an -vframes 1 -f mjpeg Video/" + Name  + ".jpg", function(err){
+                        //    socket.emit('Done', {'Image' : 'Video/' + Name + '.jpg'});
+                        //    delete Files[Name];
+                        //    console.log(Files[Name]);
+                        //});
+                        socket.emit('Done', {'Image' : 'Video/' + Name + '.jpg'});
                     });
                 });
             });
